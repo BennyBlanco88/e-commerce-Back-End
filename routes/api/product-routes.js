@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findByPk(req.params.id, {
-      include: [{model: Product}]
+      include: [{model: Category}, {model: Tag}]
     })
     res.json(product)
   } catch (err) {
@@ -38,11 +38,14 @@ router.post('/', async (req, res) => {
 // // Update a product by ID
 router.put('/:id', async (req, res) => {
   try {
-    const newProduct = await Product.update({
+    const newProduct = await Product.update(req.body,{
       where: {
-        id: req.parmas.id
+        id: req.params.id
       }
     })
+    if (newProduct[0] === 0) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
     res.json(newProduct);
   } catch (err) {
     res.status(500).json(err)
