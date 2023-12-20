@@ -1,62 +1,67 @@
-const express = require('express');
-const router = express.Router();
-const { Tag, Product } = require('../../models');
+const router = require('express').Router();
 
-// Middleware for handling async functions
-const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+const { Tag, Product, ProductTag } = require('../../models');
 
-// Get all tags
-router.get('/', asyncHandler(async (req, res) => {
-  const tagData = await Tag.findAll({
-    include: [{ model: Product }],
-  });
-  res.status(200).json(tagData);
-}));
 
-// Get tag by ID
-router.get('/:id', asyncHandler(async (req, res) => {
-  const tagData = await Tag.findByPk(req.params.id, {
-    include: [{ model: Product }],
-  });
 
-  if (!tagData) {
-    res.status(404).json({ message: "No tag found with this id!" });
-    return;
+// Get all Tags and their associated products
+router.get('/', async (req, res) => {
+  try {
+    const tagData = await Tag.findAll({})
+    res.json(tagData);
+  } catch (err) {
+    res.status(500).json(err)
   }
+})
 
-  res.status(200).json(tagData);
-}));
-
-// Create a new tag
-router.post('/', asyncHandler(async (req, res) => {
-  const tagData = await Tag.create(req.body);
-  res.status(200).json(tagData);
-}));
-
-// Update a tag's name by its `id` value
-router.put('/:id', asyncHandler(async (req, res) => {
-  const [updated] = await Tag.update(req.body, {
-    where: { id: req.params.id },
-  });
-
-  if (!updated) {
-    res.status(404).json({ message: "No tag found with this id!" });
-    return;
+// Get one Tag by its `id` value
+router.get('/:id', async (req, res) => {
+  try {
+    const tagData = await Tag.findByPk(req.params.id, {
+      include: [{model: Product}]
+    })
+    res.json(tagData)
+  } catch (err) {
+    res.status(500).json(err)
   }
+})
 
-  res.status(200).json(updated);
-}));
-
-// Delete a tag by its `id` value
-router.delete('/:id', asyncHandler(async (req, res) => {
-  const deleted = await Tag.destroy({ where: { id: req.params.id } });
-
-  if (!deleted) {
-    res.status(404).json({ message: "No tag found with this id!" });
-    return;
+// Create a new Tag
+router.post('/', async (req, res) => {
+  try {
+    const tagData = await Tag.create(req.body)
+    res.json(tagData);
+  } catch (err) {
+    res.status(500).json(err)
   }
+})
+// // Update a Tag by ID
+router.put('/:id', async (req, res) => {
+  try {
+    const update = await Tag.update({
+      where: {
+        id: req.parmas.id
+      }
+    })
+    res.json(update);
+  } catch (err) {
+    res.status(500).json(err)
+  }
+})
 
-  res.status(200).json(deleted);
-}));
+
+// // Delete a Tag by its `id` value
+router.delete('/:id', async (req, res) => {
+  try {
+    const result = await Tag.destroy({
+      where: {
+        id:req.params.id
+      }
+    })
+    res.json(result);
+  } catch (err) {
+    res.status(500).json(err)
+  }
+})
 
 module.exports = router;
